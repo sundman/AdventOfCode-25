@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+	<ItemGroup>
+		<!-- Recursively include all .txt files under Inputs\ -->
+		<Content Include="Days\**\*.txt">
+			<!-- Copy to build output -->
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<!-- Also include when publishing (dotnet publish) -->
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</Content>
+	</ItemGroup>
+
+
+
+</Project>
