@@ -28,7 +28,7 @@ namespace ConsoleApp
 
         public decimal Part1()
         {
-            List<long> badNumbers = [];
+            long badNumbers = 0;
             foreach (var range in ranges)
             {
                 long numberToInvestigate = range.start;
@@ -43,36 +43,68 @@ namespace ConsoleApp
 
                     var mid = length / 2;
 
-                    long pow = (long)Math.Pow(10, mid);        // 10^mid
-                    long firstHalf = numberToInvestigate / pow;   // integer division gives the first half
-                    long secondHalf = numberToInvestigate % pow;  // remainder gives the second half
+                    long pow = (long)Math.Pow(10, mid);
+                    long firstHalf = numberToInvestigate / pow;
+                    long secondHalf = numberToInvestigate % pow;
 
                     if (firstHalf == secondHalf)
                     {
-                        badNumbers.Add(numberToInvestigate);
+                        badNumbers += numberToInvestigate;
                         numberToInvestigate += pow;
                     }
                     else if (secondHalf < firstHalf)
                         numberToInvestigate += firstHalf - secondHalf;
                     else
                     {
-                        numberToInvestigate += pow-secondHalf+firstHalf;
+                        numberToInvestigate += pow - secondHalf + firstHalf;
                     }
 
                 }
-
             }
 
-        
-            return badNumbers.Sum();
+            return badNumbers;
         }
 
         public decimal Part2()
         {
-            var timesZero = 0;
+            List<long> badNumbers = [];
+            foreach (var range in ranges)
+            {
+                for (long i = range.start; i <= range.end; i++)
+                {
+                    var numAsString = i.ToString();
+                    for (int pos = 1; pos < numAsString.Length / 2 + 1; pos++)
+                    {
+                        var firstPart = numAsString.Substring(0, pos);
 
+                        if (numAsString.Length % firstPart.Length != 0)
+                        {
+                            continue;
+                        }
 
-            return timesZero;
+                        bool invalid = true;
+                        for (var check = pos; check < numAsString.Length; check += pos)
+                        {
+                            var toCompare = numAsString.Substring(check, pos);
+
+                            if (toCompare != firstPart)
+                            {
+                                invalid = false;
+                                break;
+                            }
+                        }
+
+                        if (invalid)
+                        {
+                            badNumbers.Add(i);
+                            break;
+                        }
+
+                    }
+                }
+            }
+
+            return badNumbers.Sum();
         }
     }
 
