@@ -51,9 +51,9 @@ namespace ConsoleApp
             }
 
             long toReturn = 0;
-            for (var max = 0; max < digitLength; max++)
+            for (var i = 0; i < digitLength; i++)
             {
-                toReturn += (maxDigit[max] - '0') * (long)Math.Pow(10, digitLength - max - 1);
+                toReturn += (maxDigit[i] - '0') * (long)Math.Pow(10, digitLength - i - 1);
             }
 
             return toReturn;
