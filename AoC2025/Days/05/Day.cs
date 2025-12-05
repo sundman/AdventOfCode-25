@@ -54,7 +54,7 @@ namespace ConsoleApp
                 var start = lastEnd >= range.start ? lastEnd + 1 : range.start;
 
                 sum += range.end - start + 1;
-                lastEnd = range.end > lastEnd ? range.end : lastEnd;
+                lastEnd = range.end;
             }
 
             return sum;
