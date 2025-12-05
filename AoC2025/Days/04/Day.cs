@@ -6,10 +6,7 @@ namespace ConsoleApp
     {
         record Coordinate(int X, int Y);
 
-        class Node
-        {
-            public bool Roll { get; set; }
-        }
+        
 
         private static List<Coordinate> Directions =
         [
@@ -23,8 +20,7 @@ namespace ConsoleApp
             new Coordinate(-1, -1)
         ];
 
-        private Dictionary<Coordinate, Node> nodes = [];
-
+       
         private bool[,] nodeGrid;
         private int maxX;
         private int maxY;
@@ -43,7 +39,6 @@ namespace ConsoleApp
                 var row = data[y];
                 for (int x = 0; x < row.Length; x++)
                 {
-                    nodes.Add(new Coordinate(x, y), new Node { Roll = row[x] == '@' });
                     nodeGrid[x, y] = row[x] == '@';
                 }
             }
@@ -65,14 +60,7 @@ namespace ConsoleApp
                 }
             }
 
-            //foreach (var kvp in nodes2)
-            //{
-            //    if (kvp.Value.Roll && CountNeighbours(kvp.Key) < 4)
-            //    {
-            //        sum++;
-            //    }
-            //}
-
+           
             return sum;
         }
 
@@ -95,6 +83,7 @@ namespace ConsoleApp
                             nodeGrid[x, y] = false;
                             totalRemoved++;
                             tryAgain = true;
+
                         }
                     }
                 }
@@ -103,22 +92,7 @@ namespace ConsoleApp
             return totalRemoved;
         }
 
-        [Obsolete]
-        private int CountNeighbours(Coordinate coord)
-        {
-            int sum = 0;
-            foreach (var dir in Directions)
-            {
-                var n = new Coordinate(coord.X + dir.X, coord.Y + dir.Y);
-                if (nodes.ContainsKey(n) && nodes[n].Roll)
-                {
-                    sum++;
-                }
-            }
-
-            return sum;
-        }
-
+        
         private int CountNeighbours(int x, int y)
         {
             int sum = 0;
