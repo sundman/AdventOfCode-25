@@ -1,7 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Diagnostics;
-using System.Linq;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+﻿using System.Diagnostics;
 
 namespace ConsoleApp
 {
