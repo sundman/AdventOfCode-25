@@ -5,25 +5,20 @@ namespace ConsoleApp
 {
     internal class Day08 : IDay
     {
-        record Point3D(int X, int Y, int Z);
 
         private List<Point3D> junctionBoxes = [];
 
-        int startX = 0;
-        private int maxX = 0;
-        private List<List<int>> splitters = [];
         public void ReadInput()
         {
 
             var filename = Debugger.IsAttached ? "Example.txt" : "Input.txt";
             var data = File.ReadAllLines($"days/{GetType().Name.Substring(3)}/{filename}");
-            maxX = data[0].Length;
+
             foreach (var line in data)
             {
                 var nums = line.Split(',', StringSplitOptions.TrimEntries).Select(int.Parse).ToArray();
                 junctionBoxes.Add(new(nums[0], nums[1], nums[2]));
             }
-
         }
 
 
@@ -32,36 +27,18 @@ namespace ConsoleApp
             return (decimal)Math.Sqrt(Math.Pow(p1.X - p2.X, 2) + Math.Pow(p1.Y - p2.Y, 2) + Math.Pow(p1.Z - p2.Z, 2));
         }
 
+        record Point3D(int X, int Y, int Z);
         record Distance(Point3D a, Point3D b, decimal distance);
-
-
-        class CircuitNode
-        {
-            public CircuitNode(Point3D point)
-            {
-                Point = point;
-                Connections = [];
-            }
-
-            public Point3D Point { get; set; }
-            public List<Point3D> Connections { get; set; }
-        }
-
 
         List<Distance> distanceList = [];
 
         public decimal Part1()
         {
 
-            // List<Distance> distanceList = [];
-
             Dictionary<Point3D, List<Point3D>> circuits = new Dictionary<Point3D, List<Point3D>>();
 
             foreach (var node in junctionBoxes)
                 circuits.Add(node, new List<Point3D>());
-
-
-            //   decimal[,] distanceTable = new decimal[junctionBoxes.Count, junctionBoxes.Count];
 
             for (int a = 0; a < junctionBoxes.Count; a++)
             {
@@ -70,8 +47,6 @@ namespace ConsoleApp
                     if (b <= a)
                         continue;
                     var dist = CalculateDistance(junctionBoxes[a], junctionBoxes[b]);
-                    //   distanceTable[a, b] = dist;
-                    //   distanceTable[b, a] = dist;
                     distanceList.Add(new(junctionBoxes[a], junctionBoxes[b], dist));
                 }
             }
