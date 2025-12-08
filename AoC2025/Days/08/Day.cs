@@ -35,10 +35,7 @@ namespace ConsoleApp
         public decimal Part1()
         {
 
-            Dictionary<Point3D, List<Point3D>> circuits = new Dictionary<Point3D, List<Point3D>>();
 
-            foreach (var node in junctionBoxes)
-                circuits.Add(node, new List<Point3D>());
 
             for (int a = 0; a < junctionBoxes.Count; a++)
             {
@@ -54,6 +51,10 @@ namespace ConsoleApp
             distanceList.Sort((a, b) => a.distance.CompareTo(b.distance));
 
             int connectionsToMake = Debugger.IsAttached ? 10 : 1000;
+
+            Dictionary<Point3D, List<Point3D>> circuits = new Dictionary<Point3D, List<Point3D>>();
+
+            junctionBoxes.ForEach(x => circuits.Add(x, new List<Point3D>()));
 
             for (int i = 0; i < connectionsToMake; i++)
             {
@@ -97,13 +98,6 @@ namespace ConsoleApp
 
         public decimal Part2()
         {
-
-            Dictionary<Point3D, List<Point3D>> circuits = new Dictionary<Point3D, List<Point3D>>();
-
-            foreach (var node in junctionBoxes)
-                circuits.Add(node, new List<Point3D>());
-
-
             // "cheating" by using the list from part 1
             //List<Distance> distanceList = [];
             //for (int a = 0; a < junctionBoxes.Count; a++)
@@ -119,15 +113,19 @@ namespace ConsoleApp
 
             //distanceList.Sort((a, b) => a.distance.CompareTo(b.distance));
 
-            int i = 0;
+            Dictionary<Point3D, List<Point3D>> circuits = new Dictionary<Point3D, List<Point3D>>();
+            junctionBoxes.ForEach(x => circuits.Add(x, new List<Point3D>()));
+
+            int i = -1;
             while (circuits.Any(x => !x.Value.Any()))
             {
+                i++;
                 circuits[distanceList[i].a].Add(distanceList[i].b);
                 circuits[distanceList[i].b].Add(distanceList[i].a);
-                i++;
+
             }
 
-            return (decimal)distanceList[i - 1].a.X * distanceList[i - 1].b.X;
+            return (decimal)distanceList[i].a.X * distanceList[i].b.X;
 
         }
     }
