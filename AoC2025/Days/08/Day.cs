@@ -34,9 +34,6 @@ namespace ConsoleApp
 
         public decimal Part1()
         {
-
-
-
             for (int a = 0; a < junctionBoxes.Count; a++)
             {
                 for (int b = 0; b < junctionBoxes.Count; b++)
@@ -98,34 +95,19 @@ namespace ConsoleApp
 
         public decimal Part2()
         {
-            // "cheating" by using the list from part 1
-            //List<Distance> distanceList = [];
-            //for (int a = 0; a < junctionBoxes.Count; a++)
-            //{
-            //    for (int b = 0; b < junctionBoxes.Count; b++)
-            //    {
-            //        if (b <= a)
-            //            continue;
-            //        var dist = CalculateDistance(junctionBoxes[a], junctionBoxes[b]);
-            //        distanceList.Add(new(junctionBoxes[a], junctionBoxes[b], dist));
-            //    }
-            //}
+            // "cheating" by using the distance list from part 1
 
-            //distanceList.Sort((a, b) => a.distance.CompareTo(b.distance));
+            var lonelyPoints = junctionBoxes.ToHashSet();
 
-            Dictionary<Point3D, List<Point3D>> circuits = new Dictionary<Point3D, List<Point3D>>();
-            junctionBoxes.ForEach(x => circuits.Add(x, new List<Point3D>()));
-
-            int i = -1;
-            while (circuits.Any(x => !x.Value.Any()))
+            int i = 0;
+            while (lonelyPoints.Any())
             {
+                lonelyPoints.Remove(distanceList[i].a);
+                lonelyPoints.Remove(distanceList[i].b);
                 i++;
-                circuits[distanceList[i].a].Add(distanceList[i].b);
-                circuits[distanceList[i].b].Add(distanceList[i].a);
-
             }
 
-            return (decimal)distanceList[i].a.X * distanceList[i].b.X;
+            return (decimal)distanceList[i - 1].a.X * distanceList[i - 1].b.X;
 
         }
     }
