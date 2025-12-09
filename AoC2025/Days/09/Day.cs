@@ -55,9 +55,9 @@ namespace ConsoleApp
         {
             var horisontalLines = new List<(Point a, Point b)>();
             var verticalLines = new List<(Point a, Point b)>();
-            var prev = tiles[0];
+            var prev = tiles.Last();
 
-            for (int i = 1; i < tiles.Count; i++)
+            for (int i = 0; i < tiles.Count; i++)
             {
                 if (tiles[i].X == prev.X)
                 {
@@ -69,6 +69,7 @@ namespace ConsoleApp
                 }
                 prev = tiles[i];
             }
+
 
             var yTiles = tiles.ToList();
             var xTiles = tiles.ToList();
@@ -106,8 +107,8 @@ namespace ConsoleApp
                         var squareMaxY = Math.Max(yA, yB);
                         var squareMinY = Math.Min(yA, yB);
 
-                        var squareMinX = xTiles[a].X;
-                        var squareMaxX = xTiles[b].X;
+                        var squareMinX = Math.Min(xTiles[a].X, xTiles[b].X);
+                        var squareMaxX = Math.Max(xTiles[a].X, xTiles[b].X);
 
                         bool passer = false;
 
@@ -115,7 +116,7 @@ namespace ConsoleApp
                         foreach (var line in verticalLines)
                         {
                             // they are sorted... faster ways to do this part
-                            if (line.a.Y <= squareMinX || line.a.Y >= squareMaxX)
+                            if (line.a.X <= squareMinX || line.a.X >= squareMaxX)
                                 continue;
 
                             var y1 = line.a.Y;
@@ -124,8 +125,8 @@ namespace ConsoleApp
                             var minY = Math.Min(y1, y2);
                             var maxY = Math.Max(y1, y2);
 
-                            if (minY < squareMaxY && maxY > squareMaxY
-                                || minY < squareMinY && maxY < squareMinY
+                            if (minY < squareMaxY && maxY >= squareMaxY
+                                || minY <= squareMinY && maxY > squareMinY
                                 )
                             {
                                 passer = true;
@@ -148,8 +149,8 @@ namespace ConsoleApp
                             var minX = Math.Min(x1, x2);
                             var maxX = Math.Max(x1, x2);
 
-                            if (minX < squareMaxX && maxX > squareMaxX
-                                || minX < squareMinX && maxX > squareMinX)
+                            if (minX < squareMaxX && maxX >= squareMaxX
+                                || minX <= squareMinX && maxX > squareMinX)
                             {
                                 passer = true;
                                 break;
