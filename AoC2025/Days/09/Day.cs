@@ -115,7 +115,6 @@ namespace ConsoleApp
                         // any line passing through us breaks the rule
                         foreach (var line in verticalLines)
                         {
-                            // they are sorted... faster ways to do this part
                             if (line.a.X <= squareMinX || line.a.X >= squareMaxX)
                                 continue;
 
@@ -126,8 +125,7 @@ namespace ConsoleApp
                             var maxY = Math.Max(y1, y2);
 
                             if (minY < squareMaxY && maxY >= squareMaxY
-                                || minY <= squareMinY && maxY > squareMinY
-                                )
+                                || minY <= squareMinY && maxY > squareMinY)
                             {
                                 passer = true;
                                 break;
