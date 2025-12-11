@@ -1,6 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Data;
 using System.Diagnostics;
 using System.Drawing;
+using System.Net.NetworkInformation;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices.Marshalling;
+using Google.OrTools.ConstraintSolver;
 
 namespace ConsoleApp
 {
@@ -58,41 +63,89 @@ namespace ConsoleApp
                 return result;
             }
 
-            public int FindPathToJoltages()
+
+            private int bestClicks = int.MaxValue;
+            private Dictionary<int[], int> seenState = new Dictionary<int[], int>(new IntArrayComparer());
+
+            private int[] clicks;
+            private int clicksum;
+            private void Dfs(int[] state)
             {
-                HashSet<int[]> possibleState = new HashSet<int[]>(new IntArrayComparer()) { joltages };
+                if (clicksum + state.Max() >= bestClicks)
+                    return;
 
-                int clicks = 0;
-                int length = joltages.Length;
-                while (possibleState.Any())
+                if (seenState.ContainsKey(state) && seenState[state] <= clicksum)
+                    return;
+
+                seenState[state] = clicksum;
+
+                if (state.All(x => x == 0))
                 {
-                    clicks++;
-                    var nextState = new HashSet<int[]>(new IntArrayComparer());
-                    foreach (var state in possibleState)
+                    if (clicksum < bestClicks)
                     {
-                        foreach (var button in Buttons)
-                        {
-                            var newState = state.ToArray();
-                            for (int i = 0; i < length; i++)
-                            {
-                                if (button[i])
-                                {
-                                    --newState[i];
-                                }
-                            }
-
-                            if (newState.All(x => x == 0))
-                                return clicks;
-
-                            if (newState.All(x => x != -1))
-                                nextState.Add(newState);
-                        }
+                        bestClicks = clicksum;
+                        Console.WriteLine($"{string.Join(',', clicksum)}");
+                        return;
                     }
-                    possibleState = nextState;
-
                 }
 
-                throw new Exception("path not found");
+                if (state.All(x => x != -1))
+                {
+                    var maxStateIndex = -1;
+                    var maxStateValue = -1;
+                    var minStateIndex = -1;
+                    var minStateValue = int.MaxValue;
+
+                    List<int> nils = [];
+                    for (int i = 0; i < state.Length; i++)
+                    {
+                        if (state[i] == 0)
+                        {
+                            nils.Add(i);
+                            continue;
+                        }
+                        if (state[i] > maxStateValue)
+                        {
+                            maxStateValue = state[i];
+                            maxStateIndex = i;
+                        }
+
+                        if (state[i] < minStateValue)
+                        {
+                            minStateValue = state[i];
+                            minStateIndex = i;
+                        }
+                    }
+
+                    foreach (var button in Buttons
+                                  .Where(x => !nils.Any(nil => x[nil]) && x[minStateIndex])
+                                 .OrderByDescending(x => x.Count(y => y)))
+                    {
+                        var newState = (int[])state.Clone();
+                        for (int i = 0; i < joltages.Length; i++)
+                        {
+                            if (button[i])
+                            {
+                                --newState[i];
+                            }
+                        }
+
+                        clicksum++;
+                        clicks[Buttons.IndexOf(button)]++;
+                        Dfs(newState);
+                        clicksum--;
+                        clicks[Buttons.IndexOf(button)]--;
+                    }
+                }
+            }
+
+            public int FindPathToJoltages()
+            {
+                bestClicks = joltages.Sum() / Buttons.Min(x => x.Count(yes => yes)) + 1;
+                clicks = new int[Buttons.Count];
+                Dfs(joltages);
+
+                return bestClicks;
             }
 
             public int FindPathToZero()
@@ -115,12 +168,8 @@ namespace ConsoleApp
                         }
                     }
                     possibleState = nextState;
-
                 }
-
             }
-
-
         }
 
         public void ReadInput()
@@ -162,23 +211,77 @@ namespace ConsoleApp
 
                 sum += clicks;
             }
-            
+
             return sum;
         }
 
         public decimal Part2()
         {
-            var sum = 0;
+            decimal sum = 0;
+            var solver = new OrToolsMinSumOnly();
+
             Stopwatch timer = new Stopwatch();
             foreach (var machine in machines)
             {
+                int[,] a2 = new int[machine.joltages.Length, machine.Buttons.Count];
+                int[] b2 = machine.joltages.Select(x => x).ToArray();
+                var upperBoundPerVar = new int[machine.Buttons.Count];
+
+                for (int x = 0; x < machine.Buttons.Count; x++)
+                {
+
+                    var upperBound = machine.joltages.Max();
+                    for (int y = 0; y < machine.joltages.Length; y++)
+                    {
+                        a2[y, x] = machine.Buttons[x][y] ? 1 : 0;
+
+                        if (machine.Buttons[x][y] && machine.joltages[y] < upperBound)
+                            upperBound = machine.joltages[y];
+                    }
+
+                    upperBoundPerVar[x] = upperBound;
+                }
+
+
                 timer.Restart();
-                var clicks = machine.FindPathToJoltages();
-                Console.WriteLine($"Found path in {clicks} clicks after {timer.ElapsedMilliseconds} ms.");
-                sum += clicks;
+                var mySolver = machine.FindPathToJoltages();
+                var myTime = timer.ElapsedMilliseconds;
+                timer.Restart();
+                var google = solver.SolveMinSumOnly(a2, b2, upperBoundPerVar) ?? 0;
+                var googleTime = timer.ElapsedMilliseconds;
+                Console.WriteLine($"My solver: {mySolver} vs Google: {google} ... {myTime} ms vs {googleTime} ms");
+
+                sum += google;
+
             }
 
             return sum;
+        }
+
+        void PrintArray(int[,] a, int[] b)
+        {
+            for (int y = 0; y < b.Length; y++)
+            {
+                for (int x = 0; x < a.GetLength(1); x++)
+                {
+                    Console.Write($"{a[y, x]} ");
+
+                }
+                Console.WriteLine($"| {b[y]}");
+            }
+        }
+
+        void PrintArray(double[,] a, double[] b)
+        {
+            for (int y = 0; y < b.Length; y++)
+            {
+                for (int x = 0; x < a.GetLength(1); x++)
+                {
+                    Console.Write($"{a[y, x]} ");
+
+                }
+                Console.WriteLine($"| {b[y]}");
+            }
         }
     }
 }
