@@ -68,6 +68,8 @@ namespace ConsoleApp
         public decimal Part2()
         {
             List<long> badNumbers = [];
+
+            HashSet<(int length, long factor)> lolol = [];
             foreach (var range in ranges)
             {
                 for (long i = range.start; i <= range.end; i++)
@@ -96,6 +98,7 @@ namespace ConsoleApp
 
                         if (invalid)
                         {
+                            lolol.Add(new(numAsString.Length, i / int.Parse(firstPart)));
                             badNumbers.Add(i);
                             break;
                         }
@@ -103,6 +106,13 @@ namespace ConsoleApp
                     }
                 }
             }
+
+            Console.WriteLine("only possible factors:");
+            foreach (var entry in lolol.ToList().OrderBy(x => x.length))
+            {
+                Console.WriteLine($"length: {entry.length}, factor: {entry.factor}");
+            }
+
 
             return badNumbers.Sum();
         }

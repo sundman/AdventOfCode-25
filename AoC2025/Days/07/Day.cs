@@ -78,20 +78,19 @@ namespace ConsoleApp
                     {
                         if (line.Contains(x))
                         {
-                            outGoingTimeline[x - 1]+= timeLineCounter[x];
+                            outGoingTimeline[x - 1] += timeLineCounter[x];
                             outGoingTimeline[x + 1] += timeLineCounter[x];
                         }
-
                         else
                         {
-                            outGoingTimeline[x]+=  timeLineCounter[x];
+                            outGoingTimeline[x] += timeLineCounter[x];
                         }
                     }
                 }
 
                 for (int x = 0; x < maxX; x++)
                 {
-                    timeLineCounter[x] = outGoingTimeline[x] ;
+                    timeLineCounter[x] = outGoingTimeline[x];
                 }
             }
 

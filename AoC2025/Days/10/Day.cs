@@ -11,15 +11,15 @@ namespace ConsoleApp
 {
     internal class Day10 : IDay
     {
-        private class IntArrayComparer : IEqualityComparer<int[]>
+        private class IntArrayComparer : IEqualityComparer<ushort[]>
         {
-            public bool Equals(int[]? x, int[]? y)
+            public bool Equals(ushort[]? x, ushort[]? y)
             {
                 if (ReferenceEquals(x, y)) return true;
                 return x.AsSpan().SequenceEqual(y);
             }
 
-            public int GetHashCode(int[] obj)
+            public int GetHashCode(ushort[] obj)
             {
                 var hc = new HashCode();
                 foreach (var v in obj)
@@ -35,12 +35,12 @@ namespace ConsoleApp
             public bool[] Lights;
             public List<bool[]> Buttons;
 
-            public int[] joltages;
+            public ushort[] joltages;
             public int LightNumber;
 
             public List<int> Switches = [];
 
-            public Machine(bool[] lights, List<bool[]> buttons, int[] joltages)
+            public Machine(bool[] lights, List<bool[]> buttons, ushort[] joltages)
             {
                 Lights = lights;
                 Buttons = buttons;
@@ -65,11 +65,11 @@ namespace ConsoleApp
 
 
             private int bestClicks = int.MaxValue;
-            private Dictionary<int[], int> seenState = new Dictionary<int[], int>(new IntArrayComparer());
+            private Dictionary<ushort[], int> seenState = new Dictionary<ushort[], int>(new IntArrayComparer());
 
             private int[] clicks;
             private int clicksum;
-            private void Dfs(int[] state)
+            private void Dfs(ushort[] state)
             {
                 if (clicksum + state.Max() >= bestClicks)
                     return;
@@ -88,6 +88,50 @@ namespace ConsoleApp
                         return;
                     }
                 }
+
+
+                // check impossible state
+                var meanish = 0;
+                foreach (var s in state)
+                {
+                    meanish += s;
+                }
+
+                meanish /= state.Length;
+
+                for (int i = 0; i < state.Length; i++)
+                {
+                    if (state[i] > meanish)
+                        continue;
+
+                    var neededClicks = state[i];
+
+                    int maxTotalClicksPossible = 0;
+                    // check max clicks on each button that satisfy their other constraints
+                    foreach (var button in Buttons.Where(b => b[i]))
+                    {
+                        int maxAllowedClicks = neededClicks;
+                        for (int b = 0; b < state.Length; b++)
+                        {
+                            if (!button[b])
+                            {
+                                continue;
+                            }
+
+                            maxAllowedClicks = Math.Min(state[b], maxAllowedClicks);
+                        }
+
+                        maxTotalClicksPossible += maxAllowedClicks;
+                    }
+
+                    if (neededClicks > maxTotalClicksPossible)
+                        return;
+
+                    // any state that has a subset the buttons of another state can have higher state than the other button
+                    
+                }
+
+               
 
                 if (state.All(x => x != -1))
                 {
@@ -121,7 +165,7 @@ namespace ConsoleApp
                                   .Where(x => !nils.Any(nil => x[nil]) && x[minStateIndex])
                                  .OrderByDescending(x => x.Count(y => y)))
                     {
-                        var newState = (int[])state.Clone();
+                        var newState = (ushort[])state.Clone();
                         for (int i = 0; i < joltages.Length; i++)
                         {
                             if (button[i])
@@ -141,7 +185,12 @@ namespace ConsoleApp
 
             public int FindPathToJoltages()
             {
-                bestClicks = joltages.Sum() / Buttons.Min(x => x.Count(yes => yes)) + 1;
+                int best = 0;
+                foreach (var s in joltages)
+                {
+                    best += s;
+                }
+                bestClicks = best / Buttons.Min(x => x.Count( y=> y));
                 clicks = new int[Buttons.Count];
                 Dfs(joltages);
 
@@ -175,6 +224,7 @@ namespace ConsoleApp
         public void ReadInput()
         {
 
+
             var filename = Debugger.IsAttached ? "Example.txt" : "Input.txt";
             var data = File.ReadAllLines($"days/{GetType().Name.Substring(3)}/{filename}");
 
@@ -195,7 +245,7 @@ namespace ConsoleApp
                     buttons.Add(button);
                 }
 
-                var joltageLevels = tokens.Last().Substring(1, tokens.Last().Length - 2).Split(',').Select(int.Parse).ToArray();
+                var joltageLevels = tokens.Last().Substring(1, tokens.Last().Length - 2).Split(',').Select(ushort.Parse).ToArray();
                 machines.Add(new Machine(lights, buttons, joltageLevels));
             }
         }
@@ -224,7 +274,7 @@ namespace ConsoleApp
             foreach (var machine in machines)
             {
                 int[,] a2 = new int[machine.joltages.Length, machine.Buttons.Count];
-                int[] b2 = machine.joltages.Select(x => x).ToArray();
+                int[] b2 = machine.joltages.Select(x => (int)x).ToArray();
                 var upperBoundPerVar = new int[machine.Buttons.Count];
 
                 for (int x = 0; x < machine.Buttons.Count; x++)
@@ -244,11 +294,15 @@ namespace ConsoleApp
 
 
                 timer.Restart();
-                var mySolver = machine.FindPathToJoltages();
-                var myTime = timer.ElapsedMilliseconds;
-                timer.Restart();
+                //var mySolver = machine.FindPathToJoltages();
+                //var myTime = timer.ElapsedMilliseconds;
+                //timer.Restart();
+                var mySolver = "disabled";
+                var myTime = "disabled";
                 var google = solver.SolveMinSumOnly(a2, b2, upperBoundPerVar) ?? 0;
                 var googleTime = timer.ElapsedMilliseconds;
+
+                PrintArray(a2, b2);
                 Console.WriteLine($"My solver: {mySolver} vs Google: {google} ... {myTime} ms vs {googleTime} ms");
 
                 sum += google;
